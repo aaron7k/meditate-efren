@@ -1,0 +1,17 @@
+Bienvenido, Marco. (PAUSA_MICRO)  Encuentra una posición cómoda para ti, ya sea sentado con la espalda recta, o recostado suavemente. (PAUSA_CORTA)  Permite que tu cuerpo se relaje, (PAUSA_MICRO)  dejando ir cualquier tensión que puedas sentir. (PAUSA_MEDIA)  Cierra tus ojos si te resulta cómodo, (PAUSA_MICRO) y permítete simplemente estar. (PAUSA_CORTA)  En este momento, solo importa tu respiración, (PAUSA_MICRO) tu cuerpo, y tu mente. (PAUSA_MEDIA)  Respira profundamente, (PAUSA_MICRO)  y deja que la calma te envuelva. (PAUSA_CORTA)
+
+Bienvenido, Marco.  Encuentra una postura cómoda, ya sea sentado o recostado. (PAUSA_MICRO)  Permite que tu cuerpo se asiente suavemente. (PAUSA_CORTA)  Cierra tus ojos si te sientes cómodo haciéndolo. (PAUSA_MICRO)
+
+
+Ahora, vamos a dirigir nuestra atención a la respiración. (PAUSA_CORTA) Observa el aire entrando en tus fosas nasales, (PAUSA_MICRO) fresco y ligero.  (PAUSA_MEDIA) Siente cómo se expande tu abdomen con cada inhalación, (PAUSA_MICRO) como una suave ola que llena tu interior. (PAUSA_CORTA)
+
+
+Nota la pausa natural entre la inhalación y la exhalación, (PAUSA_MICRO) un momento de quietud antes de que el aire vuelva a salir. (PAUSA_MEDIA)  Observa cómo tu abdomen se relaja y desciende con la exhalación, (PAUSA_MICRO) liberando cualquier tensión. (PAUSA_CORTA)  Observa la sensación del aire dejando tu cuerpo, (PAUSA_MICRO) suave y cálido. (PAUSA_LARGA)  Simplemente observa, sin juzgar, el flujo natural de tu respiración. (PAUSA_MEDIA)
+
+Ahora, Marco, imagina que estás en un lugar tranquilo (PAUSA_MEDIA). Un lugar que te evoca paz y serenidad. Quizás sea una playa desierta, un bosque frondoso, o una montaña majestuosa (PAUSA_CORTA).  Observa los detalles a tu alrededor (PAUSA_MICRO), siente la brisa suave en tu rostro, o el sol tibio en tu piel.  Escucha los sonidos de la naturaleza: el murmullo del agua, el canto de los pájaros, el susurro del viento entre las hojas (PAUSA_LARGA).  Deja que estos sonidos te envuelvan, te acunen, te lleven a un estado de profunda calma.
+
+
+Permite que la imagen de este lugar se solidifique en tu mente (PAUSA_MEDIA).  Visualízalo con todo detalle: los colores, las texturas, los olores.  Siente la paz que te transmite este espacio.  Es tu refugio, tu espacio seguro (PAUSA_CORTA).  Un lugar donde puedes dejar atrás las preocupaciones, el estrés, la presión del trabajo.
+
+
+En este espacio seguro, imagina que tus preocupaciones son pequeñas piedras (PAUSA_MEDIA). Piedras que has estado cargando sobre tus hombros, piedras que te pesan y te agobian.  Una a una, deja caer esas piedras en el agua (PAUSA_CORTA). Observa cómo se hunden lentamente en las profundidades, cómo desaparecen en el azul profundo. (PAUSA_CORTA). Siente la ligereza que te invade a medida que cada piedra se aleja de ti (PAUSA_MICRO).  Siente cómo tu cuerpo se relaja, cómo tu mente se aclara.  (PAUSA_LARGA)

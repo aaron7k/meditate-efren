@@ -1,0 +1,66 @@
+## Presentación a CEO: Meditación AI - Servicio de Generación de Audio Personalizado
+
+### 1. Objetivo del Proyecto
+
+El proyecto "Meditación AI" es una solución innovadora que permite a los usuarios generar audios de meditación guiada completamente personalizados y dinámicos. Nuestro objetivo principal es ofrecer una experiencia de meditación única y adaptada a las necesidades individuales de cada usuario, utilizando el poder de la Inteligencia Artificial.
+
+### 2. Propuesta de Valor
+
+En un mundo cada vez más estresante, la meditación se ha convertido en una herramienta esencial para el bienestar. Sin embargo, las meditaciones genéricas a menudo no resuenan con las experiencias o emociones específicas de cada persona. "Meditación AI" resuelve esto al:
+
+*   **Ofrecer personalización profunda:** Cada meditación se adapta al nombre del usuario, su estado emocional actual y su objetivo específico (ej. "manejar el estrés laboral", "mejorar la concentración", "fomentar la gratitud").
+*   **Generar contenido relevante y de alta calidad:** Utilizamos modelos avanzados de IA (Google Gemini) para crear guiones coherentes y significativos, y tecnología de Texto-a-Voz (ElevenLabs) para una narración natural y serena.
+*   **Optimizar la experiencia del usuario:** Las pausas y el ritmo de la meditación se gestionan de forma inteligente, incluyendo pausas automáticas por puntuación y la posibilidad de pausas explícitas, garantizando una inmersión total.
+*   **Escalabilidad y eficiencia:** La solución es una API robusta construida con FastAPI, lo que permite una integración sencilla con diversas plataformas y una generación rápida de audios a gran escala.
+
+### 3. Experiencia de Usuario (Flujo General)
+
+La interacción del usuario con el sistema es simple y directa, diseñada para ser integrada en aplicaciones de terceros (móviles, web, etc.).
+
+```mermaid
+flowchart TD
+    A[Usuario en App/Plataforma] --> B{Ingresa Datos de Meditación}
+    B --> C{Envía Solicitud a API}
+    C --> D[API de Meditación AI (FastAPI)]
+    D --> E{Generación de Guion (Google Gemini)}
+    E --> F{Generación de Audio (ElevenLabs)}
+    F --> G[Almacenamiento de Audio/Guion]
+    G --> H{API Devuelve URLs de Archivos}
+    H --> I[App/Plataforma Recibe URLs]
+    I --> J[Usuario Reproduce Audio Personalizado]
+```
+
+### 4. Diagrama de Flujo Detallado: Generación de Meditación
+
+Este diagrama ilustra el proceso interno de la API para generar una meditación, destacando la interacción con los servicios de IA y el manejo de pausas.
+
+```mermaid
+flowchart TD
+    A[Solicitud POST a /generar-meditacion/] --> B{Validar Datos de Entrada}
+    B -- Datos Válidos --> C{Inicializar LLM (Gemini) y TTS (ElevenLabs)}
+    C --> D{Bucle: Generar Etapas del Guion}
+    D -- Para cada Etapa --> E{Enviar Prompt a Gemini}
+    E -- Guion de Etapa --> F{Estimar Duración y Acumular}
+    F -- Fin de Etapas / Duración Alcanzada --> G{Unir Guiones de Etapas}
+    G --> H[Guardar Guion Final (.txt)]
+    H --> I{Bucle: Procesar Guion para Audio}
+    I -- Para cada Segmento --> J{Detectar Pausa Explícita [Xsec]}
+    J -- Sí --> K[Añadir Silencio (X segundos)]
+    J -- No --> L{Detectar Puntuación (Coma, Punto, Salto de Línea)}
+    L -- Sí --> M[Añadir Silencio (Duración por Puntuación)]
+    L -- No --> N{Enviar Texto a ElevenLabs (TTS)}
+    N -- Audio de Segmento --> O[Concatenar Audio de Segmento]
+    O -- Fin de Segmentos --> P[Exportar Audio Final (.mp3)]
+    P --> Q[Devolver URLs de Audio y Guion]
+    B -- Datos Inválidos --> R[Error 422: Unprocessable Entity]
+    E -- Fallo Gemini --> S[Error 500: Fallo al Generar Guion]
+    N -- Fallo ElevenLabs --> T[Error 500: Fallo al Generar Audio]
+```
+
+### 5. Próximos Pasos y Visión
+
+*   **Integración:** Facilitar la integración con plataformas populares (ej. aplicaciones de bienestar, asistentes de voz).
+*   **Monitoreo y Optimización:** Implementar monitoreo de rendimiento y uso de APIs para optimizar costos y calidad.
+*   **Nuevas Características:** Explorar la adición de música de fondo, sonidos de la naturaleza, o la posibilidad de elegir diferentes voces y estilos de narración.
+
+"Meditación AI" no es solo una API; es una puerta de entrada a una experiencia de bienestar digital profundamente personalizada y escalable. Estamos listos para transformar la forma en que las personas meditan.
