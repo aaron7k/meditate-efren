@@ -1,4 +1,3 @@
-
 import os
 import time
 from fastapi import FastAPI, HTTPException, status, BackgroundTasks
@@ -44,3 +43,7 @@ async def generar_meditacion_endpoint(request: MeditationRequest, background_tas
     )
     
     return {"message": "Generación de meditación iniciada en segundo plano. Se notificará vía webhook al finalizar.", "task_id": task_id}
+
+@app.get("/", summary="Verifica el estado de la API", tags=["General"])
+async def root():
+    return {"status": "API de Meditación funcionando correctamente."}
