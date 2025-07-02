@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     # URL del webhook para notificar la finalización de la generación de audio
     WEBHOOK_URL: str = os.getenv("WEBHOOK_URL", "")
 
+    # Configuraciones de MinIO S3
+    MINIO_ENDPOINT: str = os.getenv("MINIO_ENDPOINT", "")
+    MINIO_ACCESS_KEY: str = os.getenv("MINIO_ACCESS_KEY", "")
+    MINIO_SECRET_KEY: str = os.getenv("MINIO_SECRET_KEY", "")
+    MINIO_BUCKET_NAME: str = os.getenv("MINIO_BUCKET_NAME", "meditation-audios")
+    MINIO_SECURE: bool = os.getenv("MINIO_SECURE", "False").lower() == "true"
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 # Crear una instancia de la configuración para ser usada en la aplicación

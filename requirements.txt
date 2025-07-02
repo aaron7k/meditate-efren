@@ -1,4 +1,3 @@
-
 fastapi
 uvicorn[standard]
 langchain-google-genai
@@ -8,3 +7,4 @@ python-dotenv
 langchain
 pydantic-settings
 httpx
+minio
