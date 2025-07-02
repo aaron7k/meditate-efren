@@ -49,20 +49,39 @@ Supongamos que te llamas "Carlos", te sientes "abrumado por el trabajo" y quiere
 
 ### ¿Qué recibes a cambio?
 
-Si todo sale bien, la API te responderá con un objeto JSON que contiene las rutas para acceder al audio y al guion que se generaron para ti.
+La API te responderá inmediatamente con un estado `202 Accepted` indicando que la generación ha comenzado en segundo plano. Una vez que el audio y el script se hayan generado, se enviará una notificación con los detalles a la `WEBHOOK_URL` configurada en el servidor.
 
-**Ejemplo de respuesta:**
+**Ejemplo de respuesta inicial (HTTP 202 Accepted):**
 
 ```json
 {
-  "message": "Audio y script de meditación generados exitosamente.",
-  "audio_url": "/audios/meditacion_carlos_1751341245.mp3",
-  "audio_file_path": "/ruta/en/el/servidor/audios_generados/meditacion_carlos_1751341245.mp3",
-  "script_url": "/audios/meditacion_carlos_1751341245.txt",
-  "script_file_path": "/ruta/en/el/servidor/audios_generados/meditacion_carlos_1751341245.txt"
+  "message": "Generación de meditación iniciada en segundo plano. Se notificará vía webhook al finalizar.",
+  "task_id": "meditation_1751341245"
 }
 ```
 
-Para escuchar tu meditación, simplemente combina la dirección base de la API con la `audio_url`. Por ejemplo: `http://127.0.0.1:8000/media/meditacion_carlos_1751341245.mp3`.
+**Ejemplo de Payload del Webhook (POST a `WEBHOOK_URL`):**
 
-¡Y eso es todo! Esperamos que disfrutes de tus meditaciones personalizadas.
+```json
+{
+  "task_id": "meditation_1751341245",
+  "status": "completed",
+  "message": "Audio y script de meditación generados exitosamente.",
+  "audio_url": "/media/meditacion_carlos_1751341245.mp3",
+  "audio_file_path": "/ruta/en/el/servidor/generated_media/meditacion_carlos_1751341245.mp3",
+  "script_url": "/media/meditacion_carlos_1751341245.txt",
+  "script_file_path": "/ruta/en/el/servidor/generated_media/meditacion_carlos_1751341245.txt"
+}
+```
+
+O en caso de error:
+
+```json
+{
+  "task_id": "meditation_1751341245",
+  "status": "failed",
+  "message": "Error inesperado durante la generación de meditación: Fallo al generar el guion con la IA: ..."
+}
+```
+
+Para escuchar tu meditación, una vez recibida la notificación del webhook, combina la dirección base de la API con la `audio_url` proporcionada. Por ejemplo: `http://127.0.0.1:8000/media/meditacion_carlos_1751341245.mp3`.

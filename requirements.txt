@@ -1,3 +1,4 @@
+
 fastapi
 uvicorn[standard]
 langchain-google-genai
@@ -6,3 +7,4 @@ pydub
 python-dotenv
 langchain
 pydantic-settings
+httpx

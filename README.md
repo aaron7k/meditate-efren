@@ -126,7 +126,7 @@ El proyecto utiliza `pytest` para las pruebas. Las pruebas están diseñadas par
 
 You can generate a new meditation by sending a `POST` request to the `/generar-meditacion/` endpoint.
 
-**Example with `curl`:**
+**Ejemplo con `curl` (Inicio de Generación):**
 
 ```bash
 curl -X 'POST' \
@@ -141,14 +141,35 @@ curl -X 'POST' \
 }'
 ```
 
-**Successful response (`201 Created` code):**
+**Respuesta exitosa (código `202 Accepted`):**
 
 ```json
 {
+  "message": "Generación de meditación iniciada en segundo plano. Se notificará vía webhook al finalizar.",
+  "task_id": "meditation_1751341245"
+}
+```
+
+**Ejemplo de Payload del Webhook (POST a `WEBHOOK_URL`):**
+
+```json
+{
+  "task_id": "meditation_1751341245",
+  "status": "completed",
   "message": "Audio y script de meditación generados exitosamente.",
   "audio_url": "/media/meditacion_elena_1751341245.mp3",
   "audio_file_path": "/Users/aaronvaldes/meditate/generated_media/meditacion_elena_1751341245.mp3",
   "script_url": "/media/meditacion_elena_1751341245.txt",
   "script_file_path": "/Users/aaronvaldes/meditate/generated_media/meditacion_elena_1751341245.txt"
+}
+```
+
+O en caso de error:
+
+```json
+{
+  "task_id": "meditation_1751341245",
+  "status": "failed",
+  "message": "Error inesperado durante la generación de meditación: Fallo al generar el guion con la IA: ..."
 }
 ```

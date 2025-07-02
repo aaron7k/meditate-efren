@@ -1,11 +1,16 @@
 
 import os
-from fastapi import FastAPI, HTTPException, status
-from fastapi.staticfiles import StaticFiles
+import time
+from fastapi import FastAPI, HTTPException, status, BackgroundTasks
+from pydantic import BaseModel
 
-from app.models.meditation_models import MeditationRequest, MeditationResponse
+from app.models.meditation_models import MeditationRequest
 from app.services.meditation_service import generar_meditacion_personalizada
 from app.core.config import settings
+
+class InitialResponse(BaseModel):
+    message: str
+    task_id: str
 
 app = FastAPI(
     title="API de Meditación Personalizada",
@@ -15,57 +20,27 @@ app = FastAPI(
 
 @app.post(
     "/generar-meditacion/",
-    response_model=MeditationResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Genera un nuevo audio de meditación",
+    response_model=InitialResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Inicia la generación de un audio de meditación y notifica vía webhook",
     tags=["Meditación"]
 )
-async def generar_meditacion_endpoint(request: MeditationRequest):
+async def generar_meditacion_endpoint(request: MeditationRequest, background_tasks: BackgroundTasks):
     """
-    Recibe los datos de personalización y genera un archivo de audio MP3.
+    Recibe los datos de personalización, inicia la generación en segundo plano
+    y devuelve una respuesta inmediata. La notificación de finalización se envía
+    a través de un webhook.
     """
-    try:
-        print(f"Recibida solicitud para generar meditación para: {request.nombre_usuario}")
-        
-        ruta_archivo_audio, ruta_script_txt = generar_meditacion_personalizada(
-            nombre_usuario=request.nombre_usuario,
-            emocion_reconocida=request.emocion_reconocida,
-            objetivo_meditacion=request.objetivo_meditacion,
-            duracion_minutos=request.duracion_minutos
-        )
-        
-        nombre_archivo_audio = os.path.basename(ruta_archivo_audio)
-        audio_url = f"/media/{nombre_archivo_audio}"
-
-        nombre_script_txt = os.path.basename(ruta_script_txt)
-        script_url = f"/media/{nombre_script_txt}"
-
-        print(f"Audio generado con éxito. URL: {audio_url}")
-        print(f"Script generado con éxito. URL: {script_url}")
-
-        return {
-            "message": "Audio y script de meditación generados exitosamente.",
-            "audio_url": audio_url,
-            "audio_file_path": ruta_archivo_audio,
-            "script_url": script_url,
-            "script_file_path": ruta_script_txt
-        }
-
-    except ValueError as ve:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Error de configuración del servicio: {ve}"
-        )
-    except Exception as e:
-        print(f"Error inesperado durante la generación: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Ocurrió un error interno al generar la meditación: {e}"
-        )
-
-os.makedirs(settings.GENERATED_MEDIA_DIR, exist_ok=True)
-app.mount(f"/media", StaticFiles(directory=settings.GENERATED_MEDIA_DIR), name="media")
-
-@app.get("/", summary="Verifica el estado de la API", tags=["General"])
-async def root():
-    return {"status": "API de Meditación funcionando correctamente."}
+    task_id = f"meditation_{int(time.time())}" # Generar un ID único para la tarea
+    print(f"Recibida solicitud para generar meditación para: {request.nombre_usuario}. Task ID: {task_id}")
+    
+    background_tasks.add_task(
+        generar_meditacion_personalizada,
+        nombre_usuario=request.nombre_usuario,
+        emocion_reconocida=request.emocion_reconocida,
+        objetivo_meditacion=request.objetivo_meditacion,
+        duracion_minutos=request.duracion_minutos,
+        task_id=task_id
+    )
+    
+    return {"message": "Generación de meditación iniciada en segundo plano. Se notificará vía webhook al finalizar.", "task_id": task_id}

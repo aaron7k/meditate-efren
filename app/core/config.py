@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Directorio donde se guardarán los audios y scripts generados
     GENERATED_MEDIA_DIR: str = "generated_media"
 
+    # URL del webhook para notificar la finalización de la generación de audio
+    WEBHOOK_URL: str = os.getenv("WEBHOOK_URL", "")
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 # Crear una instancia de la configuración para ser usada en la aplicación
