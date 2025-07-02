@@ -4,6 +4,8 @@ import time
 import re
 from typing import Dict
 import httpx # Importar httpx para solicitudes HTTP
+from minio import Minio # Importar el cliente Minio
+from minio.error import S3Error
 
 from pydub import AudioSegment
 from elevenlabs import Voice, VoiceSettings
@@ -57,6 +59,36 @@ async def generar_meditacion_personalizada(
         error_msg = "WEBHOOK_URL no está configurado en las variables de entorno. No se enviará notificación."
         print(f"Advertencia: {error_msg}")
         # No se envía webhook si no hay URL, pero la generación puede continuar si es solo una advertencia
+
+    # Inicializar cliente MinIO
+    minio_client = None
+    if settings.MINIO_ENDPOINT and settings.MINIO_ACCESS_KEY and settings.MINIO_SECRET_KEY:
+        try:
+            minio_client = Minio(
+                settings.MINIO_ENDPOINT,
+                access_key=settings.MINIO_ACCESS_KEY,
+                secret_key=settings.MINIO_SECRET_KEY,
+                secure=settings.MINIO_SECURE
+            )
+            # Asegurarse de que el bucket existe
+            if not minio_client.bucket_exists(settings.MINIO_BUCKET_NAME):
+                minio_client.make_bucket(settings.MINIO_BUCKET_NAME)
+                print(f"Bucket '{settings.MINIO_BUCKET_NAME}' creado en MinIO.")
+        except S3Error as e:
+            error_msg = f"Error al conectar o configurar MinIO S3: {e}"
+            print(error_msg)
+            await send_webhook_notification(task_id, "failed", error_msg)
+            return
+        except Exception as e:
+            error_msg = f"Error inesperado al inicializar MinIO S3: {e}"
+            print(error_msg)
+            await send_webhook_notification(task_id, "failed", error_msg)
+            return
+    else:
+        error_msg = "Las variables de entorno de MinIO S3 no están completamente configuradas. No se guardarán archivos en S3."
+        print(f"Advertencia: {error_msg}")
+        # Si MinIO no está configurado, la generación puede continuar, pero los archivos no se guardarán en S3.
+        # En un entorno de producción, esto debería ser un error crítico.
 
     client = ElevenLabs(api_key=settings.ELEVENLABS_API_KEY)
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7)
@@ -128,10 +160,37 @@ IMPORTANTE: Responde únicamente con el texto del guion. No incluyas títulos, e
 
         timestamp = int(time.time())
         nombre_base_archivo = f"meditacion_{nombre_usuario.lower().replace(' ', '_')}_{timestamp}"
-        ruta_script_txt = os.path.join(settings.GENERATED_MEDIA_DIR, f"{nombre_base_archivo}.txt")
-        with open(ruta_script_txt, "w", encoding="utf-8") as f:
-            f.write(final_script)
-        print(f"Script guardado en: {ruta_script_txt}")
+        
+        # --- Subir script a MinIO S3 ---
+        script_object_name = f"{nombre_base_archivo}.txt"
+        script_data = final_script.encode('utf-8')
+        script_data_stream = io.BytesIO(script_data)
+        script_data_length = len(script_data)
+        
+        script_s3_url = ""
+        if minio_client:
+            try:
+                minio_client.put_object(
+                    settings.MINIO_BUCKET_NAME,
+                    script_object_name,
+                    script_data_stream,
+                    script_data_length,
+                    content_type="text/plain"
+                )
+                script_s3_url = f"{settings.MINIO_ENDPOINT}/{settings.MINIO_BUCKET_NAME}/{script_object_name}"
+                print(f"Script subido a MinIO S3: {script_s3_url}")
+            except S3Error as e:
+                error_msg = f"Error al subir script a MinIO S3: {e}"
+                print(error_msg)
+                await send_webhook_notification(task_id, "failed", error_msg)
+                return
+            except Exception as e:
+                error_msg = f"Error inesperado al subir script a MinIO S3: {e}"
+                print(error_msg)
+                await send_webhook_notification(task_id, "failed", error_msg)
+                return
+        else:
+            print("MinIO S3 no configurado, el script no se subirá a S3.")
 
         print("Generando audio con ElevenLabs...")
         final_audio = AudioSegment.silent(duration=0)
@@ -197,23 +256,45 @@ IMPORTANTE: Responde únicamente con el texto del guion. No incluyas títulos, e
                         # En caso de error, añadir una pausa de respaldo para no romper el ritmo
                         final_audio += AudioSegment.silent(duration=PAUSE_DURATIONS["PERIOD_PAUSE"])
 
-        os.makedirs(settings.GENERATED_MEDIA_DIR, exist_ok=True)
+        # --- Subir audio a MinIO S3 ---
+        audio_object_name = f"{nombre_base_archivo}.mp3"
+        audio_data_stream = io.BytesIO()
+        final_audio.export(audio_data_stream, format="mp3")
+        audio_data_stream.seek(0) # Volver al inicio del stream
+        audio_data_length = audio_data_stream.getbuffer().nbytes
 
-        nombre_archivo_audio = f"{nombre_base_archivo}.mp3"
-        ruta_archivo_audio = os.path.join(settings.GENERATED_MEDIA_DIR, nombre_archivo_audio)
-
-        print(f"Exportando audio a: {ruta_archivo_audio}")
-        final_audio.export(ruta_archivo_audio, format="mp3")
+        audio_s3_url = ""
+        if minio_client:
+            try:
+                minio_client.put_object(
+                    settings.MINIO_BUCKET_NAME,
+                    audio_object_name,
+                    audio_data_stream,
+                    audio_data_length,
+                    content_type="audio/mpeg"
+                )
+                audio_s3_url = f"{settings.MINIO_ENDPOINT}/{settings.MINIO_BUCKET_NAME}/{audio_object_name}"
+                print(f"Audio subido a MinIO S3: {audio_s3_url}")
+            except S3Error as e:
+                error_msg = f"Error al subir audio a MinIO S3: {e}"
+                print(error_msg)
+                await send_webhook_notification(task_id, "failed", error_msg)
+                return
+            except Exception as e:
+                error_msg = f"Error inesperado al subir audio a MinIO S3: {e}"
+                print(error_msg)
+                await send_webhook_notification(task_id, "failed", error_msg)
+                return
+        else:
+            print("MinIO S3 no configurado, el audio no se subirá a S3.")
 
         # Enviar notificación de éxito al webhook
         await send_webhook_notification(
             task_id,
             "completed",
             "Audio y script de meditación generados exitosamente.",
-            audio_url=f"/media/{nombre_archivo_audio}",
-            audio_file_path=os.path.abspath(ruta_archivo_audio),
-            script_url=f"/media/{nombre_base_archivo}.txt",
-            script_file_path=os.path.abspath(ruta_script_txt)
+            audio_url=audio_s3_url,
+            script_url=script_s3_url
         )
 
     except Exception as e:
